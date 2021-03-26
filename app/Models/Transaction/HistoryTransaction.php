@@ -10,7 +10,7 @@ class HistoryTransaction extends BaseModel
 {
     use HasFactory;
 
-    protected $table = 'hisTransaction';
+    protected $table = 'hisTransactions';
 
     /**
      * Relation customer with history transaction

@@ -19,7 +19,7 @@ class CustomerBalanceRepository
     /**
      * Return model instance
      *
-     * @return NAB
+     * @return UserBalance
      */
     public function modelInstance() {
         return new UserBalance();
@@ -41,7 +41,7 @@ class CustomerBalanceRepository
         
         if($balances) {
             foreach($balances as $balance) {
-                $result +=  round($balance->balance / $lastNab, 5, PHP_ROUND_HALF_DOWN);
+                $result +=  round($balance->balance / $lastNab, 4, PHP_ROUND_HALF_DOWN);
             }
         }
 

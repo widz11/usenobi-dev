@@ -15,7 +15,7 @@ class CreateNabTable extends Migration
     {
         Schema::create('nab', function (Blueprint $table) {
             $table->id();
-            $table->float('amount', 8, 5)->nullable();
+            $table->float('amount', 8, 4)->nullable();
             $table->timestamp('date')->nullable();
             $table->timestamps();
         });

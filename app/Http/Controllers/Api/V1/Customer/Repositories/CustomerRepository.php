@@ -18,7 +18,7 @@ class CustomerRepository
     /**
      * Return model instance
      *
-     * @return NAB
+     * @return UserCustomer
      */
     public function modelInstance() {
         return new UserCustomer();

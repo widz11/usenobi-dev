@@ -57,4 +57,27 @@ class BaseApiController extends Controller
 
         return $result;
     }
+
+    /**
+     * Return response
+     *
+     * @param array $jsonResource
+     * @param integer $httpCode
+     * @param string $message
+     * @param boolean $status
+     * @return Json
+     */
+    protected function responseJsonFromArray($jsonResource = [], $httpCode = 200, $message = 'Success', $status = true) 
+    {   
+        $result = array(
+            'status' => $status,
+            'message' => $message,
+            'http_code' => $httpCode,
+            'data' => (object) $jsonResource,
+            'links' => (object) [],
+            'meta' => (object) []
+        );
+
+        return $result;
+    }
 }

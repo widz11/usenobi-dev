@@ -50,7 +50,7 @@ class NabController extends BaseApiController
             $currentTotalUnit = $this->customerBalanceRepository->getTotalUnit();
             $newNab = 1;
             if($currentTotalUnit > 0) {
-                $newNab = round($currentBalance / $currentTotalUnit, 5, PHP_ROUND_HALF_DOWN); 
+                $newNab = round($currentBalance / $currentTotalUnit, 4, PHP_ROUND_HALF_DOWN); 
             }
             $nab = $this->nabRepository->model()::query()
                 ->create(array(

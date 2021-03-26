@@ -16,8 +16,12 @@ class CreateHistoryTransactionTable extends Migration
         Schema::create('hisTransactions', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('usrCustomer_id')->nullable()->index();
-            $table->bigInteger('balanceBefore')->nullable();
-            $table->bigInteger('balanceAfter')->nullable();
+            $table->float('nab', 8, 4)->nullable();
+            $table->float('balanceInOut', 20, 2)->nullable();
+            $table->float('balanceBefore', 20, 2)->nullable();
+            $table->float('balanceAfter', 20, 2)->nullable();
+            $table->float('unitBefore', 20, 4)->nullable();
+            $table->float('unitAfter', 20, 4)->nullable();
             $table->string('description')->nullable();
             $table->string('type')->nullable();
             $table->timestamps();

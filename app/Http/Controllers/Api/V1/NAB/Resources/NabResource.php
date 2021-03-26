@@ -16,7 +16,7 @@ class NabResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'amount' => $this->amount,
+            'nab' => $this->amount,
             'date' => date('Y-m-d', strtotime($this->date)),
             'created_at' => date('Y-m-d H:i:s', strtotime($this->created_at))
         ];

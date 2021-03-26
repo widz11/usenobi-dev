@@ -16,7 +16,9 @@ class CreateUserBalanceTable extends Migration
         Schema::create('usrBalances', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('usrCustomer_id')->nullable()->index();
-            $table->bigInteger('balance')->nullable();
+            $table->float('nab', 8, 4)->nullable();
+            $table->float('balance', 20, 2)->nullable();
+            $table->float('unit', 20, 4)->nullable();
             $table->timestamps();
         });
     }

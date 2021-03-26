@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\V1\BaseApiController;
 use App\Http\Controllers\Api\V1\Customer\Repositories\CustomerBalanceRepository;
 use App\Http\Controllers\Api\V1\Customer\Repositories\CustomerRepository;
 use App\Http\Controllers\Api\V1\Customer\Resources\CustomerResource;
+use App\Http\Controllers\Api\V1\NAB\Repositories\NabRepository;
+use App\Http\Controllers\Api\V1\Transaction\Repositories\HistoryTransactionRepository;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -16,21 +18,29 @@ class CustomerController extends BaseApiController
 {
     protected $customerRepository;
     protected $customerBalanceRepository;
+    protected $historyTransactionRepository;
+    protected $nabRepository;
 
     /**
      * Constructor
      *
      * @param CustomerRepository $customerRepository
      * @param CustomerBalanceRepository $customerBalanceRepository
+     * @param HistoryTransactionRepository $historyTransactionRepository
+     * @param NabRepository $nabRepository
      * @return $this
      */
     public function __construct(
         CustomerRepository $customerRepository,
-        CustomerBalanceRepository $customerBalanceRepository
+        CustomerBalanceRepository $customerBalanceRepository,
+        HistoryTransactionRepository $historyTransactionRepository,
+        NabRepository $nabRepository
     )
     {
         $this->customerRepository = $customerRepository;
         $this->customerBalanceRepository = $customerBalanceRepository;
+        $this->historyTransactionRepository = $historyTransactionRepository;
+        $this->nabRepository = $nabRepository;
     }
 
     /**
@@ -58,8 +68,13 @@ class CustomerController extends BaseApiController
                 ));
             
             if($customer) {
+                // NAB
+                $nabCurrent = $this->nabRepository->getLastNabAmount(); 
+
                 $customerBalance = $this->customerBalanceRepository->modelInstance();
-                $customerBalance->balance = 0; 
+                $customerBalance->nab = $nabCurrent; 
+                $customerBalance->balance = 0;
+                $customerBalance->unit = 0; 
 
                 // Create user customer with balance relation
                 $customer->balance()->save($customerBalance);
@@ -71,5 +86,90 @@ class CustomerController extends BaseApiController
         }
 
         return $this->responseJson(new CustomerResource($customer));
+    }
+
+     /**
+     * Topup balance.
+     *
+     * @param  Request  $request
+     * @return JsonResource
+     */
+    public function topup(Request $request)
+    {
+        request()->validate([
+            'user_id' => ['required'],
+            'amount_rupiah' => ['required', 'regex:/^\d*(\.\d{2})?$/']
+        ]);
+
+        $customer = $this->customerRepository->model()::query()
+                ->with('balance')
+                ->whereHas('balance')
+                ->where('id', $request->get('user_id'))
+                ->first();
+                
+        if(! $customer) {
+            return $this->responseJson(new JsonResource(null), 404, 'Data not found');
+        }
+
+        // NAB
+        $nabCurrent = $this->nabRepository->getLastNabAmount(); 
+
+        // Topup
+        $balanceTopup = (float) $request->get('amount_rupiah');
+        $unitTopup = round($balanceTopup / $nabCurrent, 4, PHP_ROUND_HALF_DOWN);
+        
+        // Current
+        $balanceCurrent = $customer->balance ? round($customer->balance->unit * $nabCurrent, 2, PHP_ROUND_HALF_DOWN) : 0;
+        $unitCurrent = $customer->balance ? round($customer->balance->unit, 4, PHP_ROUND_HALF_DOWN) : 0;
+        
+        // Balance after
+        $unitAfter = round($unitTopup + $unitCurrent, 4, PHP_ROUND_HALF_DOWN);
+        $balanceAfter = round($unitAfter * $nabCurrent, 2, PHP_ROUND_HALF_DOWN);
+
+        // Info for history
+        $description = 'Topup Rp. ' . $balanceTopup;
+        $type = 'topup';
+                
+        try {
+            DB::beginTransaction();
+
+            // Update balance customer
+            $updateCustomerBalance = $this->customerBalanceRepository->model()::query()
+                ->where('usrCustomer_id', $customer->id)
+                ->update(array(
+                    'nab' => $nabCurrent,
+                    'balance' => $balanceAfter,
+                    'unit' => $unitAfter
+                ));
+
+            // Create log history transaction
+            $historyTransaction = $this->historyTransactionRepository->create(
+                $customer,
+                $nabCurrent,
+                $balanceTopup,
+                $balanceCurrent,
+                $balanceAfter,
+                $unitCurrent,
+                $unitAfter,
+                $description,
+                $type
+            );
+
+            DB::commit();
+        } catch(Exception $e) {
+            DB::rollBack();
+            return $this->responseJson(new JsonResource(null), 500, $e->getMessage());    
+        }
+
+        $responseJson = array(
+            'id' => $customer->id,
+            'name' => $customer->name,
+            'username' => $customer->username,
+            'nilai_unit_hasil_topup' => $unitTopup,
+            'nilai_unit_total' => $unitAfter,
+            'saldo_rupiah_total' => $balanceAfter
+        );
+
+        return $this->responseJsonFromArray($responseJson);
     }
 }
