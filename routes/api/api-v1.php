@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 // Customer
 Route::post('user/add', [CustomerController::class, 'store']);
+Route::get('ib/member', [CustomerController::class, 'list']);
 Route::post('ib/topup', [CustomerController::class, 'topup']);
 Route::post('ib/withdraw', [CustomerController::class, 'withdraw']);
 

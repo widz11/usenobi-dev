@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\BaseApiController;
 use App\Http\Controllers\Api\V1\Customer\Repositories\CustomerBalanceRepository;
 use App\Http\Controllers\Api\V1\Customer\Repositories\CustomerRepository;
 use App\Http\Controllers\Api\V1\Customer\Resources\CustomerResource;
+use App\Http\Controllers\Api\V1\Customer\Resources\CustomerWithBalanceResource;
 use App\Http\Controllers\Api\V1\NAB\Repositories\NabRepository;
 use App\Http\Controllers\Api\V1\Transaction\Repositories\HistoryTransactionRepository;
 use Exception;
@@ -41,6 +42,30 @@ class CustomerController extends BaseApiController
         $this->customerBalanceRepository = $customerBalanceRepository;
         $this->historyTransactionRepository = $historyTransactionRepository;
         $this->nabRepository = $nabRepository;
+    }
+
+    /**
+     * show list
+     *
+     * @return void
+     */
+    public function list() {
+        $isPaginate = request('is_paginate') == 'true' ? true : false;
+        $pageSize = request('page_size') ? (int) request('page_size') : 20;
+        $currentPage = request('current_page')  ? (int) request('current_page') : 1;
+
+        $customers = $this->customerRepository->model()::query()
+            ->with('balance')
+            ->whereHas('balance')
+            ->orderBy('id', 'asc');
+
+        if($isPaginate) {
+            $customers = $customers->paginate($pageSize, ['*'], 'page', $currentPage);
+        } else {
+            $customers = $customers->get();
+        }
+
+        return $this->responseJson(CustomerWithBalanceResource::collection($customers));
     }
 
     /**
