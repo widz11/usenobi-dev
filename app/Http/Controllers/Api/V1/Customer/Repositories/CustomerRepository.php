@@ -15,6 +15,11 @@ class CustomerRepository
         return UserCustomer::class;
     }
 
+    /**
+     * Return model instance
+     *
+     * @return NAB
+     */
     public function modelInstance() {
         return new UserCustomer();
     }

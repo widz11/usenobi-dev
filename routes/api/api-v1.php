@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Customer\Controllers\CustomerController;
+use App\Http\Controllers\Api\V1\NAB\Controllers\NabController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,3 +17,4 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('user/add', [CustomerController::class, 'store']);
+Route::post('ib/updateTotalBalance', [NabController::class, 'updateBalance']);
