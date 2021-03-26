@@ -44,6 +44,7 @@ class NabController extends BaseApiController
         ]);
 
         try {
+            // Generate new NAB
             DB::beginTransaction();
             
             $currentBalance = (float) $request->get('current_balance');
@@ -57,6 +58,9 @@ class NabController extends BaseApiController
                     'amount' => $newNab,
                     'date' => date('Y-m-d H:i:s')
                 ));
+
+            // Update balance
+            $this->customerBalanceRepository->updateAllBalance($newNab);
 
             DB::commit();
         } catch(Exception $e) {

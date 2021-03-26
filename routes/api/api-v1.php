@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 // Customer
 Route::post('user/add', [CustomerController::class, 'store']);
 Route::post('ib/topup', [CustomerController::class, 'topup']);
+Route::post('ib/withdraw', [CustomerController::class, 'withdraw']);
 
 // Nab
 Route::post('ib/updateTotalBalance', [NabController::class, 'updateBalance']);

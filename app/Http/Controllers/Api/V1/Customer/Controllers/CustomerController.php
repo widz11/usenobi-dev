@@ -172,4 +172,93 @@ class CustomerController extends BaseApiController
 
         return $this->responseJsonFromArray($responseJson);
     }
+
+    /**
+     * Withdraw balance.
+     *
+     * @param  Request  $request
+     * @return JsonResource
+     */
+    public function withdraw(Request $request)
+    {
+        request()->validate([
+            'user_id' => ['required'],
+            'amount_rupiah' => ['required', 'regex:/^\d*(\.\d{2})?$/']
+        ]);
+
+        $customer = $this->customerRepository->model()::query()
+                ->with('balance')
+                ->whereHas('balance')
+                ->where('id', $request->get('user_id'))
+                ->first();
+                
+        if(! $customer) {
+            return $this->responseJson(new JsonResource(null), 404, 'Data not found');
+        }
+
+        // NAB
+        $nabCurrent = $this->nabRepository->getLastNabAmount(); 
+
+        // Topup
+        $balanceWitdraw = (float) $request->get('amount_rupiah');
+        $unitWithdraw = round($balanceWitdraw / $nabCurrent, 4, PHP_ROUND_HALF_DOWN);
+        
+        // Current
+        $balanceCurrent = $customer->balance ? round($customer->balance->unit * $nabCurrent, 2, PHP_ROUND_HALF_DOWN) : 0;
+        $unitCurrent = $customer->balance ? round($customer->balance->unit, 4, PHP_ROUND_HALF_DOWN) : 0;
+        
+        if($unitWithdraw <= $unitCurrent) {
+             // Balance after
+            $unitAfter = round($unitCurrent - $unitWithdraw, 4, PHP_ROUND_HALF_DOWN);
+            $balanceAfter = round($unitAfter * $nabCurrent, 2, PHP_ROUND_HALF_DOWN);
+
+            // Info for history
+            $description = 'Withdraw Rp. ' . $balanceWitdraw;
+            $type = 'withdraw';
+                    
+            try {
+                DB::beginTransaction();
+
+                // Update balance customer
+                $updateCustomerBalance = $this->customerBalanceRepository->model()::query()
+                    ->where('usrCustomer_id', $customer->id)
+                    ->update(array(
+                        'nab' => $nabCurrent,
+                        'balance' => $balanceAfter,
+                        'unit' => $unitAfter
+                    ));
+
+                // Create log history transaction
+                $historyTransaction = $this->historyTransactionRepository->create(
+                    $customer,
+                    $nabCurrent,
+                    $balanceWitdraw,
+                    $balanceCurrent,
+                    $balanceAfter,
+                    $unitCurrent,
+                    $unitAfter,
+                    $description,
+                    $type
+                );
+
+                DB::commit();
+            } catch(Exception $e) {
+                DB::rollBack();
+                return $this->responseJson(new JsonResource(null), 500, $e->getMessage());    
+            }
+
+            $responseJson = array(
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'username' => $customer->username,
+                'nilai_unit_hasil_withdraw' => $unitWithdraw,
+                'nilai_unit_total' => $unitAfter,
+                'saldo_rupiah_total' => $balanceAfter
+            );
+
+            return $this->responseJsonFromArray($responseJson);
+        } else {
+            return $this->responseJson(new JsonResource(null), 400, 'Cannot withdraw, unit withdraw exceed unit asset');
+        }
+    }
 }

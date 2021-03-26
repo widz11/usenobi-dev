@@ -33,7 +33,6 @@ class CustomerBalanceRepository
     public function getTotalUnit() {
         $result = 0;
         $nabRepository = new NabRepository;
-        $lastNab = $nabRepository->getLastNabAmount();
 
         $balances = $this->model()::query()
             ->whereHas('customer')
@@ -41,10 +40,29 @@ class CustomerBalanceRepository
         
         if($balances) {
             foreach($balances as $balance) {
-                $result +=  round($balance->balance / $lastNab, 4, PHP_ROUND_HALF_DOWN);
+                $result +=  $balance->unit;
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Update all customer balance with last nab
+     * @param float $newNab
+     * @return void
+     */
+    public function updateAllBalance($newNab) {
+        $balances = $this->model()::query()
+            ->whereHas('customer')
+            ->get();
+
+        if($balances && $newNab) {
+            foreach($balances as $balance) {
+                $balance->nab = $newNab;
+                $balance->balance = round($balance->unit * $newNab, 2, PHP_ROUND_HALF_DOWN);
+                $balance->save();
+            }
+        }
     }
 }
