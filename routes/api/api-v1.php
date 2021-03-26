@@ -16,5 +16,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Customer
 Route::post('user/add', [CustomerController::class, 'store']);
+
+// Nab
 Route::post('ib/updateTotalBalance', [NabController::class, 'updateBalance']);
+Route::get('ib/listNAB', [NabController::class, 'list']);

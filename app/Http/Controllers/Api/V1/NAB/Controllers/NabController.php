@@ -66,4 +66,26 @@ class NabController extends BaseApiController
 
         return $this->responseJson(new NabResource($nab));
     }
+
+    /**
+     * Get nab list
+     *
+     * @return void
+     */
+    public function list() {
+        $isPaginate = request('is_paginate') == 'true' ? true : false;
+        $pageSize = request('page_size') ? (int) request('page_size') : 20;
+        $currentPage = request('current_page')  ? (int) request('current_page') : 1;
+
+        $nabList = $this->nabRepository->model()::query()
+            ->latest();
+
+        if($isPaginate) {
+            $nabList = $nabList->paginate($pageSize, ['*'], 'page', $currentPage);
+        } else {
+            $nabList = $nabList->get();
+        }
+
+        return $this->responseJson(NabResource::collection($nabList));
+    }
 }
