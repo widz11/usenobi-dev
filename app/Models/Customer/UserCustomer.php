@@ -2,11 +2,11 @@
 
 namespace App\Models\Customer;
 
+use App\Models\BaseModel;
 use App\Models\Transaction\HistoryTransaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class UserCustomer extends Model
+class UserCustomer extends BaseModel
 {
     use HasFactory;
 
@@ -18,7 +18,7 @@ class UserCustomer extends Model
      * @return $this
      */
     public function balance() {
-        return $this->hasOne(UserBalance::class, 'usrCutomer_id');
+        return $this->hasOne(UserBalance::class, 'usrCustomer_id');
     }
 
     /**
@@ -27,6 +27,6 @@ class UserCustomer extends Model
      * @return $this
      */
     public function historyTransaction() {
-        return $this->hasMany(HistoryTransaction::class, 'usrCutomer_id');
+        return $this->hasMany(HistoryTransaction::class, 'usrCustomer_id');
     }
 }

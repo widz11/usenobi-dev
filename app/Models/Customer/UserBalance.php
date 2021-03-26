@@ -2,10 +2,10 @@
 
 namespace App\Models\Customer;
 
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class UserBalance extends Model
+class UserBalance extends BaseModel
 {
     use HasFactory;
 

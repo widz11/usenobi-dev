@@ -43,6 +43,15 @@ class RouteServiceProvider extends ServiceProvider
                 ->namespace($this->namespace)
                 ->group(base_path('routes/api.php'));
 
+            // Route api versioning
+            $apiNamespace = 'App\Http\Controllers\Api';
+            foreach($this->apiVerisions() as $version) {
+                Route::prefix('api/v' . $version)
+                    ->middleware('api')
+                    ->namespace($apiNamespace)
+                    ->group(base_path("routes/api/api-v{$version}.php"));
+            }
+
             Route::middleware('web')
                 ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
@@ -60,4 +69,16 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
         });
     }
+
+    /**
+     * Return list api version
+     *
+     * @return array
+     */
+    protected function apiVerisions() 
+    {
+        return [
+            '1'
+        ];
+    } 
 }

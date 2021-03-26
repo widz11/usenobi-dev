@@ -2,11 +2,11 @@
 
 namespace App\Models\Transaction;
 
+use App\Models\BaseModel;
 use App\Models\NAB\NAB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class HistoryTransaction extends Model
+class HistoryTransaction extends BaseModel
 {
     use HasFactory;
 

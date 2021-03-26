@@ -2,10 +2,10 @@
 
 namespace App\Models\NAB;
 
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class NAB extends Model
+class NAB extends BaseModel
 {
     use HasFactory;
 
