@@ -60,3 +60,23 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## How to setup project
+1. git clone https://github.com/widz11/usenobi-dev.git
+2. cd usenobi-dev
+3. composer install 
+4. create database usenobi_dbase
+5. import database usenobi_dbase.sql
+5. cp .env.example to .env in project folder
+6. php artisan key:generate
+7. php artisan serve (will show url localhost project and try in postman)
+
+## About Source code
+- About api using versioning, defined in routes/api/api-v{$version}.php and app/Providers/RouteServiceProvider.
+- ERD: https://drive.google.com/file/d/1PboOon0idFvHK_mG0RbnbZxpqAvCs2p8/view?usp=sharing
+- Schema table or migration file located in app/database/migrations
+- Models located in app/Models and defined some relation
+- For logic located in app/Http/Controllers/Api/V1.
+
+## Credits
+Thanks, i hope this project as your expected.
